@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, permission_required
 from .models import Book, Library
 
 
@@ -41,24 +41,34 @@ def register(request):
 # ---------------------------
 # Role-based access views
 # ---------------------------
-
-# Admin view (must be named exactly admin_view)
 @user_passes_test(lambda u: hasattr(u, "userprofile") and u.userprofile.role == "Admin")
 def admin_view(request):
     return render(request, "relationship_app/admin_view.html")
 
 
-# Librarian view (must be named exactly librarian_view)
 @user_passes_test(lambda u: hasattr(u, "userprofile") and u.userprofile.role == "Librarian")
 def librarian_view(request):
     return render(request, "relationship_app/librarian_view.html")
 
 
-# Member view (must be named exactly member_view)
 @user_passes_test(lambda u: hasattr(u, "userprofile") and u.userprofile.role == "Member")
 def member_view(request):
     return render(request, "relationship_app/member_view.html")
 
 
+# ---------------------------
+# Permission-protected views
+# ---------------------------
+@permission_required("relationship_app.can_add_book", raise_exception=True)
+def add_book(request):
+    return render(request, "relationship_app/add_book.html")
 
 
+@permission_required("relationship_app.can_change_book", raise_exception=True)
+def edit_book(request):
+    return render(request, "relationship_app/edit_book.html")
+
+
+@permission_required("relationship_app.can_delete_book", raise_exception=True)
+def delete_book(request):
+    return render(request, "relationship_app/delete_book.html")
