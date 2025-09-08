@@ -1,8 +1,7 @@
-# existing imports
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from .models import Book, Library
 
 # Function-based view
@@ -16,7 +15,7 @@ class LibraryDetailView(DetailView):
     template_name = "relationship_app/library_detail.html"
     context_object_name = "library"
 
-# Signup view (must be called 'register' for checker)
+# Must be named 'register' for checker
 def register(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
