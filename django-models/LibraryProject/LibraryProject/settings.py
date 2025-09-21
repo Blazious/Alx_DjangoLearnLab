@@ -45,6 +45,9 @@ X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking by denying iframe embedding
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME-type sniffing
 SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS filtering
 
+# Proxy SSL Header - Required when behind a reverse proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Trust X-Forwarded-Proto header from proxy
+
 
 # Application definition
 
