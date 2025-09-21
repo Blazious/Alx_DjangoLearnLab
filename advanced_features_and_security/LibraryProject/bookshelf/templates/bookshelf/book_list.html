@@ -1,0 +1,56 @@
+{% extends "bookshelf/base.html" %}
+
+{% block content %}
+<div class="book-list">
+    <h2>Book List</h2>
+    
+    <form method="get" class="search-form">
+        <input type="text" name="q" value="{{ request.GET.q|escape }}" placeholder="Search books...">
+        <button type="submit">Search</button>
+    </form>
+
+    <table class="book-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title|escape }}</td>
+                <td>{{ book.author|escape }}</td>
+                <td>{{ book.category.name|escape }}</td>
+                <td>
+                    {% if perms.bookshelf.can_edit %}
+                    <form method="get" action="{% url 'book_edit' book.pk %}" style="display: inline;">
+                        <button type="submit">Edit</button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if perms.bookshelf.can_delete %}
+                    <form method="post" action="{% url 'book_delete' book.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this book?')">Delete</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No books found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if perms.bookshelf.can_create %}
+    <div class="actions">
+        <a href="{% url 'book_create' %}" class="button">Add New Book</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

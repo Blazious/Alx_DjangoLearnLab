@@ -5,26 +5,65 @@ from django.urls import reverse_lazy
 from .models import Book
 from .forms import BookForm  # We'll create this form later
 
+from django.db.models import Q
+from django.core.exceptions import ValidationError
+from django.utils.html import escape
+
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
     """View for listing all books. Requires can_view permission."""
-    books = Book.objects.all()
-    return render(request, 'bookshelf/book_list.html', {'books': books})
+    books = Book.objects.select_related('category').all()
+    
+    # Secure search implementation
+    if 'q' in request.GET:
+        query = request.GET.get('q', '').strip()
+        if query:
+            # Use Q objects for complex queries and parameterized queries
+            books = books.filter(
+                Q(title__icontains=query) |
+                Q(author__icontains=query) |
+                Q(isbn__exact=query)
+            )
+    
+    return render(request, 'bookshelf/book_list.html', {
+        'books': books,
+        'query': escape(request.GET.get('q', ''))  # Escape search query for display
+    })
+
+from django.views.decorators.http import require_http_methods
+from django.core.exceptions import PermissionDenied
+import logging
+
+logger = logging.getLogger(__name__)
 
 @permission_required('bookshelf.can_create', raise_exception=True)
+@require_http_methods(['GET', 'POST'])
 def book_create(request):
     """View for creating a new book. Requires can_create permission."""
-    if request.method == 'POST':
-        form = BookForm(request.POST, request.FILES)
-        if form.is_valid():
-            book = form.save(commit=False)
-            book.owner = request.user
-            book.save()
-            messages.success(request, 'Book created successfully!')
-            return redirect('book_detail', pk=book.pk)
-    else:
-        form = BookForm()
-    return render(request, 'bookshelf/book_form.html', {'form': form, 'action': 'Create'})
+    try:
+        if request.method == 'POST':
+            form = BookForm(request.POST, request.FILES)
+            if form.is_valid():
+                book = form.save(commit=False)
+                book.owner = request.user
+                book.save()
+                messages.success(request, 'Book created successfully!')
+                logger.info(f'Book created: {book.id} by user: {request.user.id}')
+                return redirect('book_detail', pk=book.pk)
+            else:
+                logger.warning(f'Invalid book creation attempt by user: {request.user.id}')
+        else:
+            form = BookForm()
+            
+        return render(request, 'bookshelf/book_form.html', {
+            'form': form,
+            'action': 'Create',
+            'csrf_token': request.META.get('CSRF_COOKIE', '')  # For AJAX requests
+        })
+    except Exception as e:
+        logger.error(f'Error in book_create: {str(e)}')
+        messages.error(request, 'An error occurred while creating the book.')
+        return redirect('book_list')
 
 @permission_required('bookshelf.can_edit', raise_exception=True)
 def book_edit(request, pk):
