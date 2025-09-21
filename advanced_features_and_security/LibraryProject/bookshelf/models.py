@@ -88,6 +88,14 @@ class Book(models.Model):
     description = models.TextField(blank=True)
     cover_image = models.ImageField(upload_to='book_covers/', blank=True, null=True)
 
+    class Meta:
+        permissions = [
+            ("can_view", "Can view books"),
+            ("can_create", "Can create books"),
+            ("can_edit", "Can edit books"),
+            ("can_delete", "Can delete books"),
+        ]
+
     def __str__(self):
         return f"{self.title} by {self.author}"
 
