@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_http_methods
 from .models import Book
-from .forms import BookForm  # We'll create this form later
+from .forms import BookForm, ExampleForm  # Import both forms
 
 from django.db.models import Q
 from django.core.exceptions import ValidationError
@@ -88,3 +89,27 @@ def book_delete(request, pk):
         messages.success(request, 'Book deleted successfully!')
         return redirect('book_list')
     return render(request, 'bookshelf/book_confirm_delete.html', {'book': book})
+
+@require_http_methods(['GET', 'POST'])
+def example_form_view(request):
+    """Example view demonstrating secure form handling."""
+    if request.method == 'POST':
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            # Process the sanitized data
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+            
+            # Example: Log the submission (in a real app, you might save to DB)
+            logger.info(f'Form submitted by {name} ({email})')
+            
+            messages.success(request, 'Form submitted successfully!')
+            return redirect('book_list')  # Redirect to a success page
+    else:
+        form = ExampleForm()
+    
+    return render(request, 'bookshelf/form_example.html', {
+        'form': form,
+        'title': 'Example Form'
+    })
