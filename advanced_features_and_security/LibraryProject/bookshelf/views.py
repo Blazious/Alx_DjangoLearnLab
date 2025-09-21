@@ -3,12 +3,15 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
-from .models import Book
-from .forms import BookForm, ExampleForm  # Import both forms
-
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
+import logging
+from .models import Book
+from .forms import BookForm
+from .forms import ExampleForm  # Explicit import of ExampleForm
+
+logger = logging.getLogger(__name__)
 
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
