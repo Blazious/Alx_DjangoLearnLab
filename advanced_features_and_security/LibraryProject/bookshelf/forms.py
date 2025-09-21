@@ -1,5 +1,46 @@
 from django import forms
+from django.core.validators import validate_email
 from .models import Book
+
+class ExampleForm(forms.Form):
+    """Example form to demonstrate secure form handling"""
+    name = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your name',
+            'autocomplete': 'off'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        validators=[validate_email],
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email'
+        })
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Enter your message'
+        })
+    )
+
+    def clean_name(self):
+        """Sanitize name input"""
+        name = self.cleaned_data['name']
+        if len(name.strip()) < 2:
+            raise forms.ValidationError("Name must be at least 2 characters long")
+        return name.strip()
+
+    def clean_message(self):
+        """Sanitize message input"""
+        from django.utils.html import strip_tags
+        message = self.cleaned_data['message']
+        return strip_tags(message)
 
 class BookForm(forms.ModelForm):
     class Meta:
