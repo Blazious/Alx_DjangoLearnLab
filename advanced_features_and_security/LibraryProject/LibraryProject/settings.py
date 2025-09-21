@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'relationship_app',
     'accounts',  # Add the new accounts app
+    'bookshelf',  # Add the new bookshelf app
 ]
 
 # Custom User Model
