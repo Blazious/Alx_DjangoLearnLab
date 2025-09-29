@@ -5,6 +5,16 @@ from . import views
 app_name = "blog"
 
 urlpatterns = [
+ # Home / posts list
+    path('', views.PostListView.as_view(), name='post-list'),
+
+    # CRUD
+    path('posts/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
+    path('posts/new/', views.PostCreateView.as_view(), name='post-create'),
+    path('posts/<int:pk>/edit/', views.PostUpdateView.as_view(), name='post-update'),
+    path('posts/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
+    
+
     path("", views.home_view, name="home"),  # if you have a home_view; otherwise adjust
     # Registration
     path("register/", views.register_view, name="register"),
