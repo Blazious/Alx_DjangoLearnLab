@@ -1,7 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework.filters import SearchFilter, OrderingFilter  # ✅ correct place
-from django_filters.rest_framework import DjangoFilterBackend   # ✅ only for filtering
+from django_filters import rest_framework as filters  # ✅ unified filters import
 
 from .models import Book
 from .serializers import BookSerializer
@@ -22,7 +21,11 @@ class BookListView(generics.ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     # Filtering, Searching, Ordering
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
 
     # Filtering by model fields
     filterset_fields = ["title", "author", "publication_year"]
@@ -63,3 +66,4 @@ class BookDeleteView(generics.DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [IsAuthenticated]
+
