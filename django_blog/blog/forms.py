@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import Profile
 from .models import Post, Tag 
 from .models import Comment
+from taggit.forms import TagWidget
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Required. Enter a valid email address.")
@@ -39,7 +40,7 @@ class PostForm(forms.ModelForm):
         fields = ['title', 'content', 'tags']
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Post title', 'class': 'form-control'}),
-            'content': forms.Textarea(attrs={'placeholder': 'Write your post here...', 'class': 'form-control', 'rows': 8}),
+            'content': forms.Textarea(attrs={'placeholder': 'Write your post here...', 'class': 'form-control', 'rows': 8}),'tags': TagWidget()
         }
     def save(self, commit=True, *args, **kwargs):
         instance = super().save(commit=False)
