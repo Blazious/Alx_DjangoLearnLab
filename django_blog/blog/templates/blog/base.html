@@ -10,6 +10,13 @@
         <h1><a href="{% url 'home' %}">Django Blog</a></h1>
         <nav>
             <a href="{% url 'home' %}">Home</a>
+
+            <!-- Search Bar -->
+            <form method="get" action="{% url 'blog:search' %}" style="display:inline;">
+                <input type="text" name="q" placeholder="Search posts...">
+                <button type="submit">Search</button>
+            </form>
+
             {% if user.is_authenticated %}
                 <span>Welcome, {{ user.username }}!</span>
                 <a href="{% url 'logout' %}">Logout</a>

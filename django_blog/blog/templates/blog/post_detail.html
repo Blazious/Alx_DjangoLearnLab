@@ -26,6 +26,14 @@
         <p><strong>{{ comment.author.username }}</strong>
            <small>{{ comment.created_at|date:"M d, Y H:i" }}</small>
         </p>
+
+        <p><strong>Tags:</strong>
+            {% for tag in post.tags.all %}
+                <a href="{% url 'blog:tag-posts' tag.name %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                No tags
+            {% endfor %}
+        </p>
         <div>{{ comment.content|linebreaks }}</div>
 
         {% if user == comment.author %}
