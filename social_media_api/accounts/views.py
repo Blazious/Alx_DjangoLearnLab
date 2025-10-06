@@ -1,9 +1,10 @@
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.authtoken.models import Token
 from .serializers import UserSerializer, RegisterSerializer
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
 
@@ -56,3 +57,70 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowUnfollowAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        """Follow user with id=user_id"""
+        if request.user.id == user_id:
+            return Response({'detail': "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # request.user.following is the set of users the request.user follows
+        request.user.following.add(target)
+        return Response({'detail': f'You are now following {target.username}.'}, status=status.HTTP_200_OK)
+
+    def delete(self, request, user_id):
+        """Unfollow user with id=user_id"""
+        if request.user.id == user_id:
+            return Response({'detail': "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        request.user.following.remove(target)
+        return Response({'detail': f'You have unfollowed {target.username}.'}, status=status.HTTP_200_OK)
+
+
+# Optional: list followers / following with pagination
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class FollowingListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        # list users that the requested user_id follows
+        user_id = self.kwargs.get('user_id')
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return User.objects.none()
+        return user.following.all()
+
+
+class FollowersListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return User.objects.none()
+        return user.followers.all()

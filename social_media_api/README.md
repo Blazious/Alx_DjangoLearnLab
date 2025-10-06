@@ -42,6 +42,22 @@
 ### Examples
 Create post:
 
+### Follow / Unfollow
+
+- POST /api/accounts/follow/{user_id}/  — Follow user (auth required)
+- DELETE /api/accounts/follow/{user_id}/ — Unfollow user (auth required)
+- GET /api/accounts/{user_id}/following/ — Get users {user_id} follows (auth required)
+- GET /api/accounts/{user_id}/followers/ — Get users that follow {user_id} (auth required)
+
+Headers: Authorization: Token <token>
+
+Example: POST /api/accounts/follow/3/  (follows user with id 3)
+
+### Feed
+
+- GET /api/feed/ — Returns posts from users the current authenticated user follows. (auth required)
+Supports pagination: `?page=`, `?page_size=`
+
 ## Notes
 - The project uses a custom user model (`accounts.User`) — make sure this is set before initial migrations.
 - Media (profile_picture) stored under `/media/` in development.
