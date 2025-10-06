@@ -52,7 +52,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-
 class FeedListView(generics.ListAPIView):
     """
     Returns posts from users the current user follows, ordered by newest first.
@@ -63,10 +62,9 @@ class FeedListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # authors the user follows; include user's own posts optionally:
-        following_qs = user.following.all()
-        # include own posts, uncomment next line if you want to include user's posts:
-        # authors = list(following_qs) + [user]
-        authors = following_qs
-        # filter posts by those authors, order desc
-        return Post.objects.filter(author__in=authors).select_related('author').prefetch_related('comments').order_by('-created_at')
+        # Get users the current user follows
+        following_users = user.following.all()
+        # Return posts from those users ordered by creation date
+        return Post.objects.filter(author__in=following_users).order_by('-created_at') \
+    .select_related('author').prefetch_related('comments')
+
