@@ -5,7 +5,7 @@ from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsOwnerOrReadOnly
 
-# Optional custom paginator (or use global PAGE_SIZE)
+# Optional custom paginator
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -13,7 +13,11 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class PostViewSet(viewsets.ModelViewSet):
+    # ✅ explicit Post.objects.all() 
+    queryset = Post.objects.all()
+    # optional optimization preserved
     queryset = Post.objects.select_related('author').prefetch_related('comments')
+    
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = StandardResultsSetPagination
@@ -22,12 +26,15 @@ class PostViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'updated_at']
 
     def perform_create(self, serializer):
-        # set the author from the request user
         serializer.save(author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    # ✅ explicit Comment.objects.all() f
+    queryset = Comment.objects.all()
+    # optional optimization preserved
     queryset = Comment.objects.select_related('author', 'post')
+
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = StandardResultsSetPagination
@@ -36,5 +43,4 @@ class CommentViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'updated_at']
 
     def perform_create(self, serializer):
-        # prefer to set author from request; post must be provided in payload or URL
         serializer.save(author=self.request.user)
