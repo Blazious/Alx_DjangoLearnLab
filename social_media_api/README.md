@@ -58,6 +58,14 @@ Example: POST /api/accounts/follow/3/  (follows user with id 3)
 - GET /api/feed/ — Returns posts from users the current authenticated user follows. (auth required)
 Supports pagination: `?page=`, `?page_size=`
 
+## Likes
+- POST /api/posts/{post_id}/like/   — like a post (auth required)
+- DELETE /api/posts/{post_id}/like/ — unlike a post (auth required)
+
+## Notifications
+- GET /api/notifications/ — list notifications for authenticated user (paginated)
+- POST /api/notifications/mark-all-read/ — mark all unread notifications as read
+
 ## Notes
 - The project uses a custom user model (`accounts.User`) — make sure this is set before initial migrations.
 - Media (profile_picture) stored under `/media/` in development.

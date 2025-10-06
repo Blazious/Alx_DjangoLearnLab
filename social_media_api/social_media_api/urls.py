@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls', namespace='accounts')),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include('posts.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:
